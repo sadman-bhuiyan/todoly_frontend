@@ -4,14 +4,24 @@
   "description": "backend for clickapp challenge",
   "main": "app.js",
   "scripts": {
+    "start": "npm run kill && nodemon app.js",
+    "kill": "kill -9 $(lsof -i :3000) &>/dev/null | exit 0",
     "test": "uvu -r esm tests"
   },
   "author": "Sadman Bhuiyan",
   "license": "ISC",
   "devDependencies": {
+    "@types/node": "^18.6.3",
     "uvu": "^0.5.6"
   },
   "dependencies": {
-    "express": "^4.18.1"
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "mysql": "^2.18.1",
+    "mysql2": "^2.3.3",
+    "nodemon": "^2.0.19",
+    "passport-local": "^1.0.0",
+    "uuid": "^8.3.2"
   }
 }
