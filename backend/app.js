@@ -1,13 +1,11 @@
 
 const express = require('express');
-var bodyParser = require('body-parser');
 const app = express()
 const authRouter = require('./routes/auth');
+
 const port = 3000;
 
 app.use('/', authRouter);
-app.use(bodyParser.urlencoded({extended : true}));
-app.use(bodyParser.json());
 
 const server = app.listen(port, () => {
   console.log(`listening on port ${port}...`)
@@ -26,5 +24,8 @@ process.on('SIGTERM', () => {
   server.close();
   process.exit();
 });
+
+process.on('uncaughtException', err => {console.log(err)})
+
 
 
