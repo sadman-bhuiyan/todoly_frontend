@@ -21,23 +21,78 @@ const connection = db.createConnection({
   port: process.env.PORT,
 });
 
+passport.use(new LocalStrategy({
+  usernameField: 'username',
+  passwordField: 'password'
+}, function verify(username, password, cb) {
+  connection.connect(err => {
+    if (err) {
+      console.log('Error connecting to db -> ' + err)
+      return;
+    }
+    console.log("Connected to DB successfully!")
+  });
+  connection.query("SELECT username, password, id FROM Users WHERE username=?", [username], async (error, results) => {
+    if (error) {
+      console.log(error);
+      throw error;
+    }
+
+    if (results.length == 0) {
+      return cb(null, false, {
+        message: 'User not found'
+      })
+
+    }
+    else {
+      if (bcrypt.compareSync(password, results[0].password)) {
+        return cb(null, { username: results[0].username, id: results[0].id })
+      }
+      return cb(null, false, {
+        message: 'Password is wrong'
+      })
+    }
+  })
+}));
+
+passport.serializeUser(function (user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function (user, done) {
+  done(null, user);
+});
+
 
 let router = express.Router();
 
-router.post('/login', (req, res) => {
-  const form = formidable({ multiples: true });
-  form.parse(req, async (err, fields) => {
-    if (err) {
-      throw err;
-    }
-    passport.authenticate('local', {failureMessage: true }),
-  function(req, res) {
-    console.log(res);
-  }
-  })
-  res.status(200).json({message: 'hello'})
 
+router.post('/login', (req, res) => {
+  passport.authenticate('local', function (err, user, info) {
+    if (err) {
+      return res.status(401).json(err);
+    }
+    if (user) {
+      req.logIn(user, function (err) {
+        if (err) throw (err);
+
+        console.log('is authenticated?: ' + req.isAuthenticated());
+        return res.json({
+          success: true,
+          message: 'Successful Login',
+          user
+        });
+      });
+    } else {
+      res.status(401).json(info);
+    }
+  })(req, res)
 })
+router.post('/logout', (req, res) => {
+  req.logout((err) => { if (err) { return next(err); } });
+  res.status(200).json({message: 'Logging out...'})
+});
+
 
 router.post('/signup', (req, res) => {
   connection.connect(err => {
