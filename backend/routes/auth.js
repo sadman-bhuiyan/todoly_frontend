@@ -5,7 +5,7 @@ require('dotenv').config()
 const { v4: uuidv4 } = require('uuid');
 let passport = require('passport');
 let LocalStrategy = require('passport-local');
-
+const xss = require('xss')
 
 
 
@@ -32,7 +32,7 @@ passport.use(new LocalStrategy({
     }
     console.log("Connected to DB successfully!")
   });
-  connection.query("SELECT username, password, id FROM Users WHERE username=?", [username], async (error, results) => {
+  connection.query("SELECT username, password, id FROM Users WHERE username=?", [xss(username)], async (error, results) => {
     if (error) {
       console.log(error);
       throw error;
@@ -65,7 +65,6 @@ passport.deserializeUser(function (user, done) {
 
 
 let router = express.Router();
-
 
 router.post('/login', (req, res) => {
   passport.authenticate('local', function (err, user, info) {
@@ -107,7 +106,7 @@ router.post('/signup', (req, res) => {
     if (err) {
       console.log(err);
     }
-    connection.query("SELECT username FROM Users WHERE username=?", [fields.username], async (error, results) => {
+    connection.query("SELECT username FROM Users WHERE username=?", [xss(fields.username)], async (error, results) => {
       if (error) {
         console.log(error);
         throw error;
@@ -119,7 +118,7 @@ router.post('/signup', (req, res) => {
       else {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(fields.password, salt);
-        connection.query('INSERT INTO Users (id,username, password) VALUES (?, ?, ?)', [uuidv4(), fields.username, hashedPassword], (error) => {
+        connection.query('INSERT INTO Users (id,username, password) VALUES (?, ?, ?)', [uuidv4(), xss(fields.username), hashedPassword], (error) => {
           if (error != null) {
             console.log(error)
             throw error

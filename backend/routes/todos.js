@@ -1,8 +1,11 @@
 
 const { v4: uuidv4 } = require('uuid');
+const xss = require('xss')
 require('dotenv').config()
 let express = require('express');
 let router = express.Router();
+
+
 const db = require("mysql2");
 const connection = db.createConnection({
   host: process.env.HOST,
@@ -50,7 +53,7 @@ router.post('/createtodos', loggedIn, (req, res,next)=>{
         console.log("Connected to DB successfully!")
       });
 
-      connection.query('INSERT INTO Todos (id,title, todoText, userID) VALUES (?, ?, ?, ?)', [uuidv4(), req.body.title, req.body.todoText, req.user.id], async (error) => {
+      connection.query('INSERT INTO Todos (id,title, todoText, userID) VALUES (?, ?, ?, ?)', [uuidv4(), xss(req.body.title), xss(req.body.todoText), req.user.id], async (error) => {
         if(error){
             res.status(503).json({message: "Error in creating todo"})
             throw error;
