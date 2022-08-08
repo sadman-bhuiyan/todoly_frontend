@@ -101,12 +101,9 @@ router.post('/signup', (req, res) => {
     }
     console.log("Connected to DB successfully!")
   });
-  const form = formidable({ multiples: true });
-  form.parse(req, async (err, fields) => {
-    if (err) {
-      console.log(err);
-    }
-    connection.query("SELECT username FROM Users WHERE username=?", [xss(fields.username)], async (error, results) => {
+
+    console.log(req.body);
+    connection.query("SELECT username FROM Users WHERE username=?", [xss(req.body.user.username)], async (error, results) => {
       if (error) {
         console.log(error);
         throw error;
@@ -117,8 +114,8 @@ router.post('/signup', (req, res) => {
       }
       else {
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(fields.password, salt);
-        connection.query('INSERT INTO Users (id,username, password) VALUES (?, ?, ?)', [uuidv4(), xss(fields.username), hashedPassword], (error) => {
+        const hashedPassword = await bcrypt.hash(req.body.user.password, salt);
+        connection.query('INSERT INTO Users (id,username, password) VALUES (?, ?, ?)', [uuidv4(), xss(req.body.user.username), hashedPassword], (error) => {
           if (error != null) {
             console.log(error)
             throw error
@@ -129,7 +126,7 @@ router.post('/signup', (req, res) => {
     })
   }
   )
-});
+
 
 
 
