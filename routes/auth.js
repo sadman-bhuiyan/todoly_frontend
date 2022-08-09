@@ -6,13 +6,13 @@ const { v4: uuidv4 } = require('uuid');
 let passport = require('passport');
 let LocalStrategy = require('passport-local');
 const xss = require('xss')
-
-
-
-
-
-
 const db = require("mysql2");
+
+
+
+
+
+
 const connection = db.createConnection({
   host: process.env.HOST,
   user: process.env.USR,
