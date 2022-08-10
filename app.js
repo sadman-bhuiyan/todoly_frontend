@@ -19,7 +19,12 @@ app.use(session({
   cookie: { maxAge:  parseInt(process.env.SESSION_MAX_AGE), httpOnly: true}
 }));
 app.use(express.json())
-app.use(cors());
+const corsOptions ={
+  origin:'http://localhost:3000', 
+  credentials:true,            
+  optionSuccessStatus:200
+}
+app.use(cors(corsOptions));
 
 app.use(passport.initialize());
 app.use(passport.session());

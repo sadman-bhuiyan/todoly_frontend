@@ -4,6 +4,8 @@ const xss = require('xss')
 require('dotenv').config()
 let express = require('express');
 let router = express.Router();
+let passport = require('passport');
+
 
 
 const db = require("mysql2");
@@ -16,7 +18,7 @@ const connection = db.createConnection({
 });
 
 
-function loggedIn(req, res, next) {
+function loggedIn(req, res, next) {    
     console.log(req.user);
     if (req.user) {
         next();
@@ -25,7 +27,10 @@ function loggedIn(req, res, next) {
     }
 }
 
-router.get('/todos', loggedIn, (req, res, next) => {
+router.get('/todos', loggedIn ,(req, res, next) => {
+  console.log('is authenticated?: ' + req.isAuthenticated());
+  console.log(req.user);
+
     connection.connect(err => {
         if (err) {
           console.log('Error connecting to db -> ' + err)
@@ -34,12 +39,15 @@ router.get('/todos', loggedIn, (req, res, next) => {
         console.log("Connected to DB successfully!")
       });
       connection.query('SELECT *  FROM Todos WHERE userID= ?',[req.user.id] , async (error, results) => {
-        console.log(results);
         if(error){
             res.status(503).json({message: "Error in getting todo"})
             throw error;
         }else{
+            if(results != null){
             res.status(200).json({todos: results})
+            }else{
+              res.status(200).json({todos: []});
+            }
         }
       });
 });
@@ -52,7 +60,7 @@ router.post('/createtodos', loggedIn, (req, res,next)=>{
         }
         console.log("Connected to DB successfully!")
       });
-
+      console.log(req.body)
       connection.query('INSERT INTO Todos (id,title, todoText, userID) VALUES (?, ?, ?, ?)', [uuidv4(), xss(req.body.title), xss(req.body.todoText), req.user.id], async (error) => {
         if(error){
             res.status(503).json({message: "Error in creating todo"})
